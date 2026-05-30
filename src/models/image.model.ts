@@ -14,5 +14,5 @@ const ImageSchema: Schema = new Schema({
     analyzedAt: { type: Date, default: Date.now },
 });
 
-const Image = mongoose.model<Image>('Image', ImageSchema);
+const Image = mongoose.models.Image || mongoose.model<Image>('Image', ImageSchema);
 export default Image;

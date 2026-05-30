@@ -14,5 +14,5 @@ const VideoSchema: Schema = new Schema({
     analyzedAt: { type: Date, default: Date.now },
 });
 
-const Video = mongoose.model<Video>('Video', VideoSchema);
+const Video = mongoose.models.Video || mongoose.model<Video>('Video', VideoSchema);
 export default Video;

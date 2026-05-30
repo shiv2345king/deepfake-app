@@ -1,0 +1,173 @@
+'use client';
+
+import { useState } from 'react';
+import { useSession } from 'next-auth/react';
+import { Button } from '../../../components/ui/button';
+import { ShieldCheck, ShieldX, Upload, Loader2 } from 'lucide-react';
+import axios, { AxiosError } from 'axios';
+import { toast } from 'sonner';
+import Image from 'next/image';
+
+export default function ImageCheckPage() {
+  const { data: session } = useSession();
+  const [file, setFile] = useState<File | null>(null);
+  const [preview, setPreview] = useState<string | null>(null);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [result, setResult] = useState<'Fake' | 'Real' | null>(null);
+  const [fileUrl, setFileUrl] = useState<string | null>(null);
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const selected = e.target.files?.[0];
+    if (!selected) return;
+    setFile(selected);
+    setResult(null);
+    setPreview(URL.createObjectURL(selected));
+  };
+
+  const handleSubmit = async () => {
+    if (!file) return toast.error('Please select an image first.');
+    if (!session) return toast.error('Please sign in first.');
+
+    setIsAnalyzing(true);
+    setResult(null);
+
+    try {
+      const formData = new FormData();
+      formData.append('image', file);
+
+      const response = await axios.post('/api/image-check', formData);
+      setResult(response.data.result);
+      setFileUrl(response.data.fileUrl);
+    } catch (error) {
+      const axiosError = error as AxiosError<{ message: string }>;
+      toast.error(axiosError.response?.data.message ?? 'Analysis failed.');
+    } finally {
+      setIsAnalyzing(false);
+    }
+  };
+
+  const handleReset = () => {
+    setFile(null);
+    setPreview(null);
+    setResult(null);
+    setFileUrl(null);
+  };
+
+  return (
+    <div className="min-h-screen bg-black text-white">
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-blue-900/10 via-black to-black pointer-events-none" />
+
+      <div className="relative max-w-2xl mx-auto px-6 py-16">
+
+        {/* Header */}
+        <div className="text-center mb-10">
+          <div className="flex justify-center mb-4">
+            <div className="p-3 rounded-full bg-blue-600/20 border border-blue-500/30">
+              <ShieldCheck className="w-8 h-8 text-blue-500" />
+            </div>
+          </div>
+          <h1 className="text-3xl font-bold tracking-tight">
+            Image <span className="text-blue-500">Deepfake</span> Detection
+          </h1>
+          <p className="text-white/50 text-sm mt-2">
+            Upload an image to check if it's AI-generated or real
+          </p>
+          {session && (
+            <p className="text-white/30 text-xs mt-1">
+              🪙 {session.user?.tokensRemaining} tokens remaining
+            </p>
+          )}
+        </div>
+
+        {/* Upload / Result Card */}
+        <div className="bg-white/5 border border-white/10 rounded-2xl p-8 backdrop-blur-sm">
+
+          {/* Result State */}
+          {result ? (
+            <div className="flex flex-col items-center gap-6">
+              {fileUrl && (
+                <div className="relative w-full h-64 rounded-xl overflow-hidden border border-white/10">
+                  <Image src={fileUrl} alt="Analyzed image" fill className="object-cover" />
+                </div>
+              )}
+
+              <div className={`flex flex-col items-center gap-3 p-6 rounded-2xl border w-full ${
+                result === 'Fake'
+                  ? 'bg-red-500/10 border-red-500/30'
+                  : 'bg-green-500/10 border-green-500/30'
+              }`}>
+                {result === 'Fake' ? (
+                  <ShieldX className="w-12 h-12 text-red-400" />
+                ) : (
+                  <ShieldCheck className="w-12 h-12 text-green-400" />
+                )}
+                <p className={`text-2xl font-bold ${result === 'Fake' ? 'text-red-400' : 'text-green-400'}`}>
+                  {result === 'Fake' ? '⚠ Deepfake Detected' : '✓ Image is Real'}
+                </p>
+                <p className="text-white/40 text-sm text-center">
+                  {result === 'Fake'
+                    ? 'This image appears to be AI-generated or manipulated.'
+                    : 'This image appears to be authentic.'}
+                </p>
+              </div>
+
+              <Button
+                onClick={handleReset}
+                className="w-full bg-white/10 hover:bg-white/20 text-white border border-white/10"
+              >
+                Check Another Image
+              </Button>
+            </div>
+          ) : (
+            /* Upload State */
+            <div className="flex flex-col items-center gap-6">
+              <label
+                htmlFor="image-upload"
+                className={`w-full h-56 flex flex-col items-center justify-center border-2 border-dashed rounded-xl cursor-pointer transition-all ${
+                  preview
+                    ? 'border-blue-500/50 bg-blue-500/5'
+                    : 'border-white/10 hover:border-white/30 hover:bg-white/5'
+                }`}
+              >
+                {preview ? (
+                  <div className="relative w-full h-full rounded-xl overflow-hidden">
+                    <Image src={preview} alt="Preview" fill className="object-cover rounded-xl" />
+                  </div>
+                ) : (
+                  <>
+                    <Upload className="w-10 h-10 text-white/20 mb-3" />
+                    <p className="text-white/40 text-sm">Click to upload an image</p>
+                    <p className="text-white/20 text-xs mt-1">PNG, JPG, WEBP supported</p>
+                  </>
+                )}
+                <input
+                  id="image-upload"
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={handleFileChange}
+                />
+              </label>
+
+              {file && (
+                <p className="text-white/40 text-xs">{file.name}</p>
+              )}
+
+              <Button
+                onClick={handleSubmit}
+                disabled={!file || isAnalyzing}
+                className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold disabled:opacity-50"
+              >
+                {isAnalyzing ? (
+                  <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Analyzing...</>
+                ) : (
+                  'Analyze Image'
+                )}
+              </Button>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
