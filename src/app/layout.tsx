@@ -10,6 +10,9 @@ const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"]
 export const metadata: Metadata = {
   title: "DeepScan",
   description: "AI-powered deepfake detection",
+  icons:{
+    icon: "/Image.png",
+  }
 };
 
 export default function RootLayout({
