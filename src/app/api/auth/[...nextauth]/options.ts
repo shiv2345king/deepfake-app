@@ -26,8 +26,20 @@ export const authOptions: NextAuthOptions = {
           if (!user.isVerified) throw new Error('Please verify your account before logging in');
 
           const isPasswordCorrect = await bcrypt.compare(credentials.password, user.password);
-          if (isPasswordCorrect) return user;
-          else throw new Error('Incorrect password');
+          if (!isPasswordCorrect) throw new Error('Incorrect password');
+
+          // Daily token refresh
+          const now = new Date();
+          const lastRefresh = user.lastTokenRefresh ?? user.createdAt;
+          const daysSinceRefresh = (now.getTime() - lastRefresh.getTime()) / (1000 * 60 * 60 * 24);
+
+          if (daysSinceRefresh >= 1) {
+            user.tokensRemaining = 10;
+            user.lastTokenRefresh = now;
+            await user.save();
+          }
+
+          return user;
         } catch (err: any) {
           throw new Error(err);
         }
@@ -50,7 +62,7 @@ export const authOptions: NextAuthOptions = {
         session.user.isVerified = token.isVerified;
         session.user.username = token.username;
 
-        // Fetch fresh token count from DB so it always reflects deductions
+        // Fetch fresh token count from DB
         await dbConnect();
         const freshUser = await User.findById(token._id).select('tokensRemaining');
         session.user.tokensRemaining = freshUser?.tokensRemaining ?? 0;
