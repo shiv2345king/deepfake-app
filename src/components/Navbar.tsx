@@ -19,8 +19,8 @@ function Navbar() {
           <NextImage
             src="/logo.png"
             alt="DeepScan Logo"
-            width={32}
-            height={32}
+            width={64}
+            height={64}
             className="rounded-md"
           />
           <span className="text-xl font-bold text-white tracking-tight">
