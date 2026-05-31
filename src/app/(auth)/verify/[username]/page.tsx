@@ -11,7 +11,8 @@ import { useParams, useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import * as z from 'zod';
 import { verifySchema } from '../../../../schemas/verifySchema';
-import { Link, ShieldCheck } from 'lucide-react';
+import Link from 'next/link';
+import { ShieldCheck } from 'lucide-react';
 
 export default function VerifyAccount() {
   const router = useRouter();
@@ -32,7 +33,7 @@ export default function VerifyAccount() {
       router.replace('/sign-in');
     } catch (error) {
       const axiosError = error as AxiosError<ApiResponse>;
-      toast.error(axiosError.response?.data.message ?? 'An error occurred. Please try again.');
+      toast.error(axiosError.response?.data.message ?? 'Verification failed. Please try again.');
     }
   };
 
@@ -41,8 +42,6 @@ export default function VerifyAccount() {
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-blue-900/20 via-black to-black pointer-events-none" />
 
       <div className="relative w-full max-w-md p-8 space-y-6 bg-white/5 border border-white/10 rounded-2xl shadow-2xl backdrop-blur-sm">
-
-        {/* Logo */}
         <div className="text-center space-y-2">
           <div className="flex justify-center mb-4">
             <div className="p-3 rounded-full bg-blue-600/20 border border-blue-500/30">
@@ -50,44 +49,31 @@ export default function VerifyAccount() {
             </div>
           </div>
           <h1 className="text-3xl font-bold text-white tracking-tight">
-            Verify your <span className="text-blue-500">Account</span>
+            Verify your <span className="text-blue-500">Identity</span>
           </h1>
           <p className="text-white/50 text-sm">
-            Enter the 6-digit code sent to your email
+            Enter the 6-digit code we sent to your email address to activate your account
           </p>
         </div>
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
-            <FormField
-              name="code"
-              control={form.control}
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-white/70">Verification Code</FormLabel>
-                  <Input
-                    {...field}
-                    placeholder="123456"
-                    className="bg-white/5 border-white/10 text-white placeholder:text-white/20 focus:border-blue-500 text-center text-xl tracking-widest"
-                  />
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <Button
-              type="submit"
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold"
-            >
-              Verify Account
+            <FormField name="code" control={form.control} render={({ field }) => (
+              <FormItem>
+                <FormLabel className="text-white/70">Verification Code</FormLabel>
+                <Input {...field} placeholder="123456" className="bg-white/5 border-white/10 text-white placeholder:text-white/20 focus:border-blue-500 text-center text-xl tracking-widest" />
+                <FormMessage />
+              </FormItem>
+            )} />
+            <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold">
+              Verify & Activate Account
             </Button>
           </form>
         </Form>
 
         <p className="text-center text-white/40 text-sm">
           Didn't receive a code?{' '}
-          <Link href="/sign-up" className="text-blue-400 hover:text-blue-300 transition-colors">
-            Sign up again
-          </Link>
+          <Link href="/sign-up" className="text-blue-400 hover:text-blue-300 transition-colors">Try signing up again</Link>
         </p>
       </div>
     </div>

@@ -18,10 +18,7 @@ export default function SignInForm() {
 
   const form = useForm<z.infer<typeof signInSchema>>({
     resolver: zodResolver(signInSchema),
-    defaultValues: {
-      identifier: '',
-      password: '',
-    },
+    defaultValues: { identifier: '', password: '' },
   });
 
   const onSubmit = async (data: z.infer<typeof signInSchema>) => {
@@ -33,25 +30,22 @@ export default function SignInForm() {
 
     if (result?.error) {
       if (result.error === 'CredentialsSignin') {
-        toast.error('Invalid email/username or password.');
+        toast.error('Invalid credentials. Please try again.');
       } else {
         toast.error(result.error);
       }
     }
 
     if (result?.url) {
-      router.replace('/dashboard');
+      router.replace('/');
     }
   };
 
   return (
     <div className="flex justify-center items-center min-h-screen bg-black">
-      {/* Background glow */}
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-blue-900/20 via-black to-black pointer-events-none" />
 
       <div className="relative w-full max-w-md p-8 space-y-6 bg-white/5 border border-white/10 rounded-2xl shadow-2xl backdrop-blur-sm">
-
-        {/* Logo */}
         <div className="text-center space-y-2">
           <div className="flex justify-center mb-4">
             <div className="p-3 rounded-full bg-blue-600/20 border border-blue-500/30">
@@ -61,7 +55,7 @@ export default function SignInForm() {
           <h1 className="text-3xl font-bold text-white tracking-tight">
             Welcome back to <span className="text-blue-500">DeepScan</span>
           </h1>
-          <p className="text-white/50 text-sm">Sign in to start detecting deepfakes</p>
+          <p className="text-white/50 text-sm">Sign in to continue protecting truth</p>
         </div>
 
         <Form {...form}>
@@ -71,7 +65,7 @@ export default function SignInForm() {
               control={form.control}
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-white/70">Email / Username</FormLabel>
+                  <FormLabel className="text-white/70">Email or Username</FormLabel>
                   <Input
                     {...field}
                     placeholder="you@example.com"
@@ -97,19 +91,16 @@ export default function SignInForm() {
                 </FormItem>
               )}
             />
-            <Button
-              type="submit"
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 rounded-lg transition-all"
-            >
-              Sign In
+            <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 rounded-lg transition-all">
+              Continue to DeepScan
             </Button>
           </form>
         </Form>
 
         <p className="text-center text-white/40 text-sm">
-          Not a member yet?{' '}
+          New to DeepScan?{' '}
           <Link href="/sign-up" className="text-blue-400 hover:text-blue-300 transition-colors">
-            Create an account
+            Create a free account
           </Link>
         </p>
       </div>
