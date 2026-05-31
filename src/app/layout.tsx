@@ -11,7 +11,7 @@ export const metadata: Metadata = {
   title: "DeepScan",
   description: "AI-powered deepfake detection",
   icons:{
-    icon: "/Image.png",
+    icon: "/logo.png",
   }
 };
 
