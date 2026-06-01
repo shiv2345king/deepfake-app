@@ -38,20 +38,24 @@ export default function VerifyAccount() {
   };
 
   return (
-    <div className="flex justify-center items-center min-h-screen bg-black">
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-blue-900/20 via-black to-black pointer-events-none" />
+    <div className="flex justify-center items-center min-h-screen bg-[#0a0a1a]">
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_#1a1040_0%,_#0a0a1a_60%)] pointer-events-none" />
 
-      <div className="relative w-full max-w-md p-8 space-y-6 bg-white/5 border border-white/10 rounded-2xl shadow-2xl backdrop-blur-sm">
+      <div className="relative w-full max-w-md p-8 space-y-6 bg-white/[0.03] border border-white/[0.08] rounded-2xl shadow-xl shadow-blue-950/20 backdrop-blur-sm">
+
         <div className="text-center space-y-2">
           <div className="flex justify-center mb-4">
-            <div className="p-3 rounded-full bg-blue-600/20 border border-blue-500/30">
-              <ShieldCheck className="w-8 h-8 text-blue-500" />
+            <div className="p-3 rounded-full bg-gradient-to-br from-blue-600/20 to-violet-600/20 border border-blue-500/20">
+              <ShieldCheck className="w-8 h-8 text-blue-400" />
             </div>
           </div>
-          <h1 className="text-3xl font-bold text-white tracking-tight">
-            Verify your <span className="text-blue-500">Identity</span>
+          <h1 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-white to-white/70 bg-clip-text text-transparent">
+            Verify your{' '}
+            <span className="bg-gradient-to-r from-blue-400 to-violet-400 bg-clip-text text-transparent">
+              Identity
+            </span>
           </h1>
-          <p className="text-white/50 text-sm">
+          <p className="text-white/40 text-sm">
             Enter the 6-digit code we sent to your email address to activate your account
           </p>
         </div>
@@ -60,20 +64,29 @@ export default function VerifyAccount() {
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
             <FormField name="code" control={form.control} render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-white/70">Verification Code</FormLabel>
-                <Input {...field} placeholder="123456" className="bg-white/5 border-white/10 text-white placeholder:text-white/20 focus:border-blue-500 text-center text-xl tracking-widest" />
+                <FormLabel className="text-white/60 text-xs uppercase tracking-wider">Verification Code</FormLabel>
+                <Input
+                  {...field}
+                  placeholder="123456"
+                  className="bg-white/[0.04] border-white/[0.08] text-white placeholder:text-white/20 focus:border-blue-500/50 focus:bg-white/[0.06] text-center text-2xl tracking-[0.5em] transition-all"
+                />
                 <FormMessage />
               </FormItem>
             )} />
-            <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold">
+            <Button
+              type="submit"
+              className="w-full bg-gradient-to-r from-blue-600 to-violet-600 hover:from-blue-500 hover:to-violet-500 text-white font-semibold shadow-lg shadow-blue-900/30 transition-all"
+            >
               Verify & Activate Account
             </Button>
           </form>
         </Form>
 
-        <p className="text-center text-white/40 text-sm">
+        <p className="text-center text-white/30 text-sm">
           Didn't receive a code?{' '}
-          <Link href="/sign-up" className="text-blue-400 hover:text-blue-300 transition-colors">Try signing up again</Link>
+          <Link href="/sign-up" className="bg-gradient-to-r from-blue-400 to-violet-400 bg-clip-text text-transparent hover:opacity-80 transition-opacity">
+            Try signing up again
+          </Link>
         </p>
       </div>
     </div>
