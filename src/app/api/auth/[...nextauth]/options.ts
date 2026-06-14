@@ -47,13 +47,12 @@ export const authOptions: NextAuthOptions = {
           }
 
           const now = new Date();
-          const lastRefresh = user.lastTokenRefresh ?? user.createdAt;
+          const lastRefresh = user.lastTokenRefresh || user.createdAt;
 
-          const daysSinceRefresh =
-            (now.getTime() - new Date(lastRefresh).getTime()) /
-            (1000 * 60 * 60 * 24);
+          const isDifferentDay =
+            now.toDateString() !== new Date(lastRefresh).toDateString();
 
-          if (daysSinceRefresh >= 1) {
+          if (isDifferentDay || user.tokensRemaining < 10) {
             user.tokensRemaining = 10;
             user.lastTokenRefresh = now;
             await user.save();
@@ -94,13 +93,12 @@ export const authOptions: NextAuthOptions = {
         if (freshUser) {
           const now = new Date();
           const lastRefresh =
-            freshUser.lastTokenRefresh ?? freshUser.createdAt;
+            freshUser.lastTokenRefresh || freshUser.createdAt;
 
-          const daysSinceRefresh =
-            (now.getTime() - new Date(lastRefresh).getTime()) /
-            (1000 * 60 * 60 * 24);
+          const isDifferentDay =
+            now.toDateString() !== new Date(lastRefresh).toDateString();
 
-          if (daysSinceRefresh >= 1) {
+          if (isDifferentDay || freshUser.tokensRemaining < 10) {
             freshUser.tokensRemaining = 10;
             freshUser.lastTokenRefresh = now;
             await freshUser.save();

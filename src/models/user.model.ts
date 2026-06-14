@@ -9,7 +9,7 @@ export interface User extends Document {
     isVerified: boolean;
     verifyCode: string;
     verifyCodeExpiry: Date;
-    lastTokenRefresh: Date;
+    lastTokenRefresh?: Date | null;
     createdAt: Date;
     updatedAt: Date;
 }
@@ -23,7 +23,7 @@ const UserSchema: Schema = new Schema({
     verifyCodeExpiry: { type: Date, required: true },
     isVerified: { type: Boolean, default: false },
     tokensRemaining: { type: Number, default: 10 },
-    lastTokenRefresh: { type: Date, default: Date.now },
+    lastTokenRefresh: { type: Date, default: null },
 }, { timestamps: true });
 
 const User = (mongoose.models.User || mongoose.model<User>('User', UserSchema));
