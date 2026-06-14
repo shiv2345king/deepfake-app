@@ -7,31 +7,51 @@ import dbConnect from "@/lib/dbConnect";
 export const authOptions: NextAuthOptions = {
   providers: [
     CredentialsProvider({
-      id: 'credentials',
-      name: 'Credentials',
+      id: "credentials",
+      name: "Credentials",
       credentials: {
-        email: { label: 'Email', type: 'text' },
-        password: { label: 'Password', type: 'password' },
+        identifier: { label: "Email or Username", type: "text" },
+        password: { label: "Password", type: "password" },
       },
+
       async authorize(credentials: any): Promise<any> {
         await dbConnect();
+
         try {
+          if (!credentials?.identifier || !credentials?.password) {
+            throw new Error("Email/username and password are required");
+          }
+
           const user = await User.findOne({
             $or: [
               { email: credentials.identifier },
               { username: credentials.identifier },
             ],
           });
-          if (!user) throw new Error('No user found with this email');
-          if (!user.isVerified) throw new Error('Please verify your account before logging in');
 
-          const isPasswordCorrect = await bcrypt.compare(credentials.password, user.password);
-          if (!isPasswordCorrect) throw new Error('Incorrect password');
+          if (!user) {
+            throw new Error("No user found with this email or username");
+          }
 
-          // Daily token refresh
+          if (!user.isVerified) {
+            throw new Error("Please verify your account before logging in");
+          }
+
+          const isPasswordCorrect = await bcrypt.compare(
+            credentials.password,
+            user.password
+          );
+
+          if (!isPasswordCorrect) {
+            throw new Error("Incorrect password");
+          }
+
           const now = new Date();
           const lastRefresh = user.lastTokenRefresh ?? user.createdAt;
-          const daysSinceRefresh = (now.getTime() - lastRefresh.getTime()) / (1000 * 60 * 60 * 24);
+
+          const daysSinceRefresh =
+            (now.getTime() - new Date(lastRefresh).getTime()) /
+            (1000 * 60 * 60 * 24);
 
           if (daysSinceRefresh >= 1) {
             user.tokensRemaining = 10;
@@ -41,11 +61,12 @@ export const authOptions: NextAuthOptions = {
 
           return user;
         } catch (err: any) {
-          throw new Error(err);
+          throw new Error(err.message || "Login failed");
         }
       },
     }),
   ],
+
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
@@ -54,27 +75,54 @@ export const authOptions: NextAuthOptions = {
         token.username = user.username;
         token.tokensRemaining = user.tokensRemaining;
       }
+
       return token;
     },
+
     async session({ session, token }) {
-      if (token) {
+      if (token && session.user) {
         session.user._id = token._id;
         session.user.isVerified = token.isVerified;
         session.user.username = token.username;
 
-        // Fetch fresh token count from DB
         await dbConnect();
-        const freshUser = await User.findById(token._id).select('tokensRemaining');
-        session.user.tokensRemaining = freshUser?.tokensRemaining ?? 0;
+
+        const freshUser = await User.findById(token._id).select(
+          "tokensRemaining lastTokenRefresh createdAt"
+        );
+
+        if (freshUser) {
+          const now = new Date();
+          const lastRefresh =
+            freshUser.lastTokenRefresh ?? freshUser.createdAt;
+
+          const daysSinceRefresh =
+            (now.getTime() - new Date(lastRefresh).getTime()) /
+            (1000 * 60 * 60 * 24);
+
+          if (daysSinceRefresh >= 1) {
+            freshUser.tokensRemaining = 10;
+            freshUser.lastTokenRefresh = now;
+            await freshUser.save();
+          }
+
+          session.user.tokensRemaining = freshUser.tokensRemaining;
+        } else {
+          session.user.tokensRemaining = 0;
+        }
       }
+
       return session;
     },
   },
+
   session: {
-    strategy: 'jwt',
+    strategy: "jwt",
   },
+
   secret: process.env.NEXTAUTH_SECRET,
+
   pages: {
-    signIn: '/sign-in',
+    signIn: "/sign-in",
   },
 };
